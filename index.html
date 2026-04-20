@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Attendance Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nosifer&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: {
+                            900: '#111827',
+                            800: '#1f2937',
+                            700: '#374151',
+                        }
+                    },
+                    fontFamily: {
+                        'drippy': ['Nosifer', 'cursive'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            cursor: url('curser_med.png'), auto !important;
+        }
+
+        /* Hide the default browser arrows on number inputs */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease-out, visibility 0.5s;
+            overflow: hidden;
+        }
+
+        #splash-screen::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('bg.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: contrast(1.1) brightness(0.9);
+        }
+
+        /* Noise effect overlay */
+        .noise-overlay {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            right: -50%;
+            bottom: -50%;
+            width: 200%;
+            height: 200%;
+            background: transparent url('http://assets.iceable.com/img/noise-transparent.png') repeat 0 0;
+            background: transparent url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAAD9tt+XAAAABlBMVEUAAAAAAAClZ7nPAAAAAnRSTlMAGovxNEIAAAAnSURBVDjXY2BIAIIDAgYIDAgYIDAgYIDAgYIDAgYIDAgYIDAgYEBgAD4FAv6yV1MNAAAAAElFTkSuQmCC') repeat 0 0;
+            opacity: .18;
+            pointer-events: none;
+            z-index: 1;
+            animation: noise-anim .2s infinite;
+        }
+
+        @keyframes noise-anim {
+            0% { transform: translate(0,0) }
+            10% { transform: translate(-1%,-1%) }
+            20% { transform: translate(-2%,1%) }
+            30% { transform: translate(1%,-2%) }
+            40% { transform: translate(-1%,3%) }
+            50% { transform: translate(-2%,1%) }
+            60% { transform: translate(3%,0) }
+            70% { transform: translate(0,2%) }
+            80% { transform: translate(-3%,1%) }
+            90% { transform: translate(1%,3%) }
+            100% { transform: translate(1%,1%) }
+        }
+
+        .splash-content {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            z-index: 2;
+            cursor: url('curser_med.png'), pointer !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .splash-text {
+            color: #ff1493;
+            font-family: 'Nosifer', cursive;
+            font-size: clamp(1.2rem, 5vw, 3.5rem);
+            text-align: center;
+            pointer-events: auto;
+            user-select: none;
+            white-space: normal;
+            letter-spacing: 0.1em;
+            display: flex;
+            flex-direction: column; /* Stack the lines */
+            align-items: center;
+            justify-content: center;
+            gap: 1em; /* Space between lines */
+            max-width: 95%;
+            z-index: 10;
+        }
+
+        .text-line {
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: center;
+            gap: 0.2em;
+        }
+
+        .splash-text span {
+            display: inline-block;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-shadow: 
+                3px 3px 0px #000,
+                -1px -1px 0px #000,  
+                1px -1px 0px #000,
+                -1px 1px 0px #000,
+                1px 1px 0px #000;
+        }
+
+
+        .splash-text span:hover {
+            transform: scale(1.4) translateY(-10px);
+            color: #ff6ec7;
+            filter: drop-shadow(0 0 20px #ff1493);
+            z-index: 20;
+        }
+
+        @keyframes drip-pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255, 20, 147, 0.5)); }
+            50% { transform: scale(1.02); filter: drop-shadow(0 0 20px rgba(255, 20, 147, 0.8)); }
+        }
+
+
+
+        .music-toggle {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 100;
+            background: rgba(31, 41, 55, 0.5);
+            backdrop-filter: blur(8px);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            cursor: url('curser_small.png'), pointer !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            overflow: hidden;
+            padding: 0;
+        }
+
+        .music-toggle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .music-toggle:hover {
+            transform: scale(1.1) rotate(5deg);
+            border-color: #3b82f6;
+        }
+
+        .music-toggle.playing {
+            animation: pulse 2s infinite;
+            border-color: #3b82f6;
+        }
+
+        .music-toggle.playing img {
+            animation: rotate 3s linear infinite;
+        }
+
+        /* CD hole effect */
+        .music-toggle::after {
+            content: "";
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #111827;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: inset 0 0 5px #000;
+        }
+
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+
+        .hidden-splash {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-6 font-sans">
+    <!-- Splash Screen -->
+    <div id="splash-screen" onclick="hideSplash()">
+        <div class="noise-overlay"></div>
+        <div class="splash-content">
+            <div class="splash-text" id="drippyText">
+                <!-- Spans will be injected here by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Music Control -->
+    <button id="musicToggle" class="music-toggle" onclick="toggleMusic()" title="Toggle Music">
+        <img src="micon.png" alt="Music Icon">
+    </button>
+    <audio id="bgMusic" loop>
+        <source src="song.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-8 bg-gray-800 p-5 rounded-xl shadow-lg border border-gray-700">
+            <h1 class="text-2xl font-bold tracking-tight">Semester Attendance Tracker</h1>
+            <div class="flex items-center gap-3 bg-gray-900 p-2 rounded-lg border border-gray-700">
+                <label for="target" class="text-sm text-gray-400 font-medium ml-2">Target Goal:</label>
+                <div class="flex items-center">
+                    <input type="number" id="target" value="75" min="1" max="100" class="w-16 bg-gray-800 text-white px-2 py-1.5 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-center font-bold text-lg transition-all">
+                    <span class="text-gray-400 ml-1 mr-2">%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-8 flex gap-3">
+            <input type="text" id="newSubject" placeholder="Enter Additional Subject Name..." class="flex-1 bg-gray-800 border border-gray-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500">
+            <button onclick="addSubject()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-semibold transition-colors duration-200 shadow-lg">Add Subject</button>
+        </div>
+
+        <div id="subjectsContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            </div>
+    </div>
+
+    <script>
+        // Shared template with fixed totals and zeroed attendance
+        const defaultSubjects = [
+            { id: 1, name: 'Computing for Sciences', totalSemester: 46, held: 0, attended: 0 },
+            { id: 2, name: 'Data Structures and Algorithms (DSA)', totalSemester: 67, held: 0, attended: 0 },
+            { id: 3, name: 'OOPs using C++', totalSemester: 57, held: 0, attended: 0 },
+            { id: 4, name: 'Mathematical Science - 2', totalSemester: 58, held: 0, attended: 0 },
+            { id: 5, name: 'Environment Sustainability (EVS)', totalSemester: 13, held: 0, attended: 0 },
+            { id: 6, name: 'EDGE', totalSemester: 13, held: 0, attended: 0 },
+            { id: 7, name: 'Time & Priority Management', totalSemester: 3, held: 0, attended: 0 }
+        ];
+
+        // Fresh memory key so it doesn't load your personal data
+        let subjects = JSON.parse(localStorage.getItem('attendanceData_shared_v1'));
+        if (!subjects || subjects.length === 0) {
+            subjects = defaultSubjects;
+            saveData();
+        }
+
+        const targetInput = document.getElementById('target');
+        
+        const savedTarget = localStorage.getItem('attendanceTarget_shared_v1');
+        if(savedTarget) targetInput.value = savedTarget;
+
+        targetInput.addEventListener('input', () => {
+            let val = parseInt(targetInput.value);
+            if (val > 100) targetInput.value = 100;
+            if (val < 1) targetInput.value = 1;
+            localStorage.setItem('attendanceTarget_shared_v1', targetInput.value);
+            renderCards();
+        });
+
+        function saveData() {
+            localStorage.setItem('attendanceData_shared_v1', JSON.stringify(subjects));
+        }
+
+        function addSubject() {
+            const input = document.getElementById('newSubject');
+            const name = input.value.trim();
+            if (name) {
+                // Allow them to set a custom total if they add a totally new subject
+                let customTotal = prompt("Enter total semester classes for this subject:", "50");
+                let totalNum = parseInt(customTotal) || 0;
+                subjects.push({ id: Date.now(), name: name, totalSemester: totalNum, held: 0, attended: 0 });
+                input.value = '';
+                saveData();
+                renderCards();
+            }
+        }
+
+        function deleteSubject(id) {
+            subjects = subjects.filter(sub => sub.id !== id);
+            saveData();
+            renderCards();
+        }
+
+        function updateCount(id, field, delta) {
+            const subject = subjects.find(sub => sub.id === id);
+            if (subject) {
+                subject[field] = Math.max(0, subject[field] + delta);
+                validateAndSave(subject, field);
+            }
+        }
+
+        function setCount(id, field, value) {
+            const subject = subjects.find(sub => sub.id === id);
+            if (subject) {
+                let val = parseInt(value) || 0;
+                subject[field] = Math.max(0, val);
+                validateAndSave(subject, field);
+            }
+        }
+
+        function validateAndSave(subject, field) {
+            if (field === 'attended' && subject.attended > subject.held) {
+                subject.held = subject.attended;
+            }
+            if (field === 'held' && subject.held < subject.attended) {
+                subject.attended = subject.held;
+            }
+            if (subject.held > subject.totalSemester) {
+                subject.totalSemester = subject.held;
+            }
+            saveData();
+            renderCards();
+        }
+
+        function calculateStats(attended, held, totalSemester, target) {
+            const currentPercent = held === 0 ? 0 : (attended / held) * 100;
+            const remainingClasses = Math.max(0, totalSemester - held);
+            const totalRequiredToPass = Math.ceil((target / 100) * totalSemester);
+            
+            let moreNeeded = totalRequiredToPass - attended;
+            if (moreNeeded < 0) moreNeeded = 0;
+
+            const skippable = remainingClasses - moreNeeded;
+
+            return { 
+                currentPercent: currentPercent.toFixed(2), 
+                remainingClasses,
+                moreNeeded, 
+                skippable 
+            };
+        }
+
+        function renderCards() {
+            const container = document.getElementById('subjectsContainer');
+            const target = parseFloat(targetInput.value) || 75;
+            container.innerHTML = '';
+
+            subjects.forEach(sub => {
+                const stats = calculateStats(sub.attended, sub.held, sub.totalSemester, target);
+                
+                let statusColor = stats.currentPercent >= target ? 'text-blue-400' : 'text-orange-400';
+                if(stats.currentPercent < (target - 10)) statusColor = 'text-red-500';
+                if(sub.held === 0) statusColor = 'text-gray-400';
+
+                let predictionHTML = '';
+                if (sub.totalSemester === 0 || sub.totalSemester <= sub.held) {
+                    predictionHTML = `<span class="text-gray-400 font-medium">Semester finished or set Total Classes.</span>`;
+                } else if (stats.skippable < 0) {
+                    predictionHTML = `<span class="text-red-500 font-bold bg-red-500/10 px-3 py-1 rounded-md">Impossible to reach ${target}%. Short by ${Math.abs(stats.skippable)}.</span>`;
+                } else {
+                    predictionHTML = `
+                        <div class="flex flex-col gap-1">
+                            <span class="text-blue-400 font-medium">Must attend: <span class="font-bold text-white">${stats.moreNeeded}</span> out of remaining ${stats.remainingClasses}</span>
+                            <span class="text-green-400 font-medium">Safe to skip: <span class="font-bold text-white">${stats.skippable}</span> classes</span>
+                        </div>
+                    `;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'bg-gray-800 p-5 rounded-2xl shadow-md border border-gray-700 relative hover:border-gray-600 transition-colors';
+                
+                card.innerHTML = `
+                    <button onclick="deleteSubject(${sub.id})" class="absolute top-4 right-4 text-gray-600 hover:text-red-400 transition-colors" title="Delete Subject">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                    
+                    <h2 class="text-xl font-bold mb-5 pr-8 text-gray-100">${sub.name}</h2>
+                    
+                    <div class="mb-5 bg-gray-900/50 p-3 rounded-lg border border-gray-700/50 flex justify-between items-center">
+                        <span class="text-sm text-gray-400 font-medium">Final Total Classes for Semester:</span>
+                        <span class="text-lg font-bold text-white bg-gray-800 px-3 py-1 rounded-lg border border-gray-700">${sub.totalSemester}</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-gray-900 p-3 rounded-xl border border-gray-700">
+                            <p class="text-xs text-gray-400 mb-2 uppercase tracking-wider font-semibold text-center">Attended</p>
+                            <div class="flex items-center justify-between">
+                                <button onclick="updateCount(${sub.id}, 'attended', -1)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-800 hover:bg-gray-600 text-xl font-bold transition-colors">-</button>
+                                <input type="number" value="${sub.attended}" onchange="setCount(${sub.id}, 'attended', this.value)" class="w-12 bg-transparent text-center font-mono text-xl font-bold focus:outline-none focus:bg-gray-700 rounded text-white">
+                                <button onclick="updateCount(${sub.id}, 'attended', 1)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-800 hover:bg-gray-600 text-xl font-bold transition-colors">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-900 p-3 rounded-xl border border-gray-700">
+                            <p class="text-xs text-gray-400 mb-2 uppercase tracking-wider font-semibold text-center">Held So Far</p>
+                            <div class="flex items-center justify-between">
+                                <button onclick="updateCount(${sub.id}, 'held', -1)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-800 hover:bg-gray-600 text-xl font-bold transition-colors">-</button>
+                                <input type="number" value="${sub.held}" onchange="setCount(${sub.id}, 'held', this.value)" class="w-12 bg-transparent text-center font-mono text-xl font-bold focus:outline-none focus:bg-gray-700 rounded text-white">
+                                <button onclick="updateCount(${sub.id}, 'held', 1)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-800 hover:bg-gray-600 text-xl font-bold transition-colors">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-900 rounded-xl p-4 border border-gray-700 shadow-inner">
+                        <div class="flex justify-between items-end mb-3 pb-3 border-b border-gray-800">
+                            <span class="text-sm text-gray-400 font-medium">Current LMS %</span>
+                            <span class="text-3xl font-bold tracking-tight ${statusColor}">${stats.currentPercent}%</span>
+                        </div>
+                        
+                        <div class="text-sm mt-2">
+                            ${predictionHTML}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Initial render
+        renderCards();
+
+        // Inject drippy text spans
+        const textContainer = document.getElementById('drippyText');
+        const lines = ["ARE YOU READY TO", "DEBARRED"];
+        
+        lines.forEach(lineText => {
+            const lineDiv = document.createElement('div');
+            lineDiv.className = 'text-line';
+            lineText.split("").forEach(char => {
+                const span = document.createElement('span');
+                span.textContent = char === " " ? "\u00A0" : char;
+                lineDiv.appendChild(span);
+            });
+            textContainer.appendChild(lineDiv);
+        });
+
+        // Music and Splash Logic
+        const splash = document.getElementById('splash-screen');
+        const music = document.getElementById('bgMusic');
+        const musicToggle = document.getElementById('musicToggle');
+        const musicIcon = document.getElementById('musicIcon');
+
+        function hideSplash() {
+            splash.classList.add('hidden-splash');
+        }
+
+        let isPlaying = false;
+        function toggleMusic() {
+            if (isPlaying) {
+                music.pause();
+                musicToggle.classList.remove('playing');
+            } else {
+                music.play().catch(err => console.log("Audio play failed:", err));
+                musicToggle.classList.add('playing');
+            }
+            isPlaying = !isPlaying;
+        }
+    </script>
+</body>
+</html>
