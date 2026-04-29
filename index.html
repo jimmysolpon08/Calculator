@@ -84,6 +84,13 @@
             filter: contrast(1.1) brightness(0.9);
         }
 
+        /* Mobile specific background */
+        @media (max-width: 768px) {
+            #splash-screen::before {
+                background-image: url('jimmobilebg.jpg');
+            }
+        }
+
         /* Noise effect overlay */
         .noise-overlay {
             position: absolute;
@@ -272,7 +279,7 @@
     <div id="custom-cursor"></div>
 
     <div class="max-w-4xl mx-auto px-6 mb-10 pt-6">
-        <img src="upes.png" alt="UPES Logo" class="w-full h-auto rounded-2xl shadow-2xl transition-all duration-500 hover:drop-shadow-[0_0_35px_rgba(255,255,255,0.8)] hover:scale-[1.01] object-cover max-h-[250px]">
+        <img src="upes.png" alt="UPES Logo" class="w-full h-auto rounded-2xl shadow-2xl transition-all duration-500 hover:drop-shadow-[0_0_35px_rgba(255,255,255,0.8)] hover:scale-[1.01] object-contain max-h-[250px] bg-white/5">
     </div>
 
     <div class="max-w-4xl mx-auto px-6">
