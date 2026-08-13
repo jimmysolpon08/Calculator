@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Class Attendance Tracker</title>
+    <!-- PWA & Mobile App Experience -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Attendance Tracker">
+    <link rel="apple-touch-icon" href="micon.png">
     <link href="https://fonts.googleapis.com/css2?family=Nosifer&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -301,11 +306,14 @@
 </head>
 <body class="bg-gray-900 text-white min-h-screen p-6 font-sans">
     <!-- Splash Screen -->
-    <div id="splash-screen" onclick="hideSplash()">
+    <div id="splash-screen" onclick="hideSplash()" class="cursor-pointer">
         <div class="noise-overlay"></div>
-        <div class="splash-content">
+        <div class="splash-content flex flex-col items-center justify-center">
             <div class="splash-text" id="drippyText">
                 <!-- Spans will be injected here by JS -->
+            </div>
+            <div class="mt-8 z-20 text-gray-300 text-sm tracking-widest uppercase font-mono bg-black/40 px-4 py-2 rounded-full border border-pink-500/30 animate-pulse backdrop-blur-sm pointer-events-none">
+                Click anywhere to enter
             </div>
         </div>
     </div>
@@ -339,26 +347,25 @@
         <div class="mb-8 flex flex-col sm:flex-row gap-3">
             <input type="text" id="newSubject" placeholder="Enter Additional Subject Name..." class="flex-1 w-full bg-gray-800 border border-gray-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500">
             <button onclick="addSubject()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-semibold transition-colors duration-200 shadow-lg w-full sm:w-auto">Add Subject</button>
+            <button onclick="resetToDefaults()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-3 rounded-xl font-medium transition-colors duration-200 border border-gray-600 w-full sm:w-auto text-sm" title="Reset to default subjects">Reset Subjects</button>
         </div>
 
         <div id="subjectsContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            </div>
+        </div>
     </div>
 
     <script>
         // Shared template with fixed totals and zeroed attendance
         const defaultSubjects = [
-            { id: 1, name: 'Computing for Sciences', totalSemester: 46, held: 0, attended: 0 },
-            { id: 2, name: 'Data Structures and Algorithms (DSA)', totalSemester: 67, held: 0, attended: 0 },
-            { id: 3, name: 'OOPs using C++', totalSemester: 57, held: 0, attended: 0 },
-            { id: 4, name: 'Mathematical Science - 2', totalSemester: 58, held: 0, attended: 0 },
-            { id: 5, name: 'Environment Sustainability (EVS)', totalSemester: 13, held: 0, attended: 0 },
-            { id: 6, name: 'EDGE', totalSemester: 13, held: 0, attended: 0 },
-            { id: 7, name: 'Time & Priority Management', totalSemester: 3, held: 0, attended: 0 }
+            { id: 1, name: 'Elements of AIML', totalSemester: 54, held: 0, attended: 0 },
+            { id: 2, name: 'Databases', totalSemester: 70, held: 0, attended: 0 },
+            { id: 3, name: 'Python Programming', totalSemester: 70, held: 0, attended: 0 },
+            { id: 4, name: 'Design & Analysis of Algorithm', totalSemester: 52, held: 0, attended: 0 },
+            { id: 5, name: 'Discrete Mathematics & Linear Algebra', totalSemester: 51, held: 0, attended: 0 }
         ];
 
-        // Fresh memory key so it doesn't load your personal data
-        let subjects = JSON.parse(localStorage.getItem('attendanceData_shared_v1'));
+        // Fresh memory key so it loads new semester data
+        let subjects = JSON.parse(localStorage.getItem('attendanceData_v2'));
         if (!subjects || subjects.length === 0) {
             subjects = defaultSubjects;
             saveData();
@@ -366,19 +373,27 @@
 
         const targetInput = document.getElementById('target');
         
-        const savedTarget = localStorage.getItem('attendanceTarget_shared_v1');
+        const savedTarget = localStorage.getItem('attendanceTarget_v2');
         if(savedTarget) targetInput.value = savedTarget;
 
         targetInput.addEventListener('input', () => {
             let val = parseInt(targetInput.value);
             if (val > 100) targetInput.value = 100;
             if (val < 1) targetInput.value = 1;
-            localStorage.setItem('attendanceTarget_shared_v1', targetInput.value);
+            localStorage.setItem('attendanceTarget_v2', targetInput.value);
             renderCards();
         });
 
         function saveData() {
-            localStorage.setItem('attendanceData_shared_v1', JSON.stringify(subjects));
+            localStorage.setItem('attendanceData_v2', JSON.stringify(subjects));
+        }
+
+        function resetToDefaults() {
+            if (confirm("Reset subjects to new semester defaults?")) {
+                subjects = JSON.parse(JSON.stringify(defaultSubjects));
+                saveData();
+                renderCards();
+            }
         }
 
         function addSubject() {
@@ -557,6 +572,7 @@
         function hideSplash() {
             splash.classList.add('hidden-splash');
         }
+        document.addEventListener('keydown', hideSplash);
 
         let isPlaying = false;
         function toggleMusic() {
