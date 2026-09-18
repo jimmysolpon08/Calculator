@@ -334,20 +334,20 @@
 
             <!-- Mobile: Interactive Lever -->
             <div id="mobile-lever-container" class="md:hidden absolute left-0 w-full flex flex-col items-center justify-end z-20 pointer-events-auto select-none" style="bottom: max(env(safe-area-inset-bottom, 40px), 40px);">
-                <div class="text-white/80 text-sm tracking-widest font-mono mb-2 uppercase font-bold pointer-events-none">Pull to enter</div>
+                <div class="text-[#ff1493] drop-shadow-[0_0_8px_rgba(255,20,147,0.8)] text-sm tracking-widest font-mono mb-2 uppercase font-bold pointer-events-none">Pull to enter</div>
                 
                 <div id="custom-lever-track" class="relative flex items-center justify-start" style="width: 280px; height: 180px;">
                     <!-- Lever Handle Wrapper -->
                     <div id="lever-handle-wrapper" class="relative cursor-grab" style="touch-action: none; transform-origin: bottom center; will-change: transform;">
-                        <img id="lever-original-img" src="ss.jpg" class="hidden" crossorigin="anonymous" />
-                        <canvas id="lever-canvas" style="width: 150px; height: auto; display: block; pointer-events: none;"></canvas>
+                        <img id="lever-img" src="guy.png" style="width: 150px; height: auto; display: block; pointer-events: none;" />
                         
                         <!-- Glow overlay positioned over the sphere in the image -->
                         <div id="sphere-glow-overlay" class="absolute pointer-events-none rounded-full" style="
                             width: 35px; 
                             height: 35px; 
-                            top: 4%; 
-                            left: 42%; 
+                            top: 5%; 
+                            left: 50%; 
+                            transform: translateX(-50%);
                             background: radial-gradient(circle, rgba(255,50,50,0.85) 20%, rgba(255,0,0,0) 70%);
                             box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
                             transition: background 0.1s, box-shadow 0.1s;
@@ -632,60 +632,7 @@
         });
 
         // --- Lever Logic for Mobile ---
-        const leverImg = document.getElementById('lever-original-img');
-        const leverCanvas = document.getElementById('lever-canvas');
-
-        function processImage() {
-            if (!leverCanvas) return;
-            const ctx = leverCanvas.getContext('2d', { willReadFrequently: true });
-            leverCanvas.width = leverImg.naturalWidth;
-            leverCanvas.height = leverImg.naturalHeight;
-            ctx.drawImage(leverImg, 0, 0);
-            
-            const imageData = ctx.getImageData(0, 0, leverCanvas.width, leverCanvas.height);
-            const data = imageData.data;
-            const w = leverCanvas.width;
-            const h = leverCanvas.height;
-            
-            // Flood Fill to remove background touching edges
-            const visited = new Uint8Array(w * h);
-            const stack = [[0, 0], [w-1, 0], [0, h-1], [w-1, h-1]]; // Start from 4 corners
-            
-            function isBg(r, g, b) {
-                // Background is generally checkerboard white/grey.
-                const isGrayscale = Math.abs(r - g) < 20 && Math.abs(g - b) < 20 && Math.abs(r - b) < 20;
-                return isGrayscale && r > 160; 
-            }
-
-            while(stack.length > 0) {
-                const [x, y] = stack.pop();
-                if (x < 0 || x >= w || y < 0 || y >= h) continue;
-                
-                const idx = y * w + x;
-                if (visited[idx]) continue;
-                visited[idx] = 1;
-                
-                const pIdx = idx * 4;
-                if (isBg(data[pIdx], data[pIdx+1], data[pIdx+2])) {
-                    // Make transparent
-                    data[pIdx+3] = 0;
-                    
-                    stack.push([x+1, y]);
-                    stack.push([x-1, y]);
-                    stack.push([x, y+1]);
-                    stack.push([x, y-1]);
-                }
-            }
-            ctx.putImageData(imageData, 0, 0);
-        }
-
-        if (leverImg) {
-            if (leverImg.complete) {
-                processImage();
-            } else {
-                leverImg.onload = processImage;
-            }
-        }
+        const leverImg = document.getElementById('lever-img');
 
         const handleWrapper = document.getElementById('lever-handle-wrapper');
         const sphereGlow = document.getElementById('sphere-glow-overlay');
