@@ -2,8 +2,16 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Class Attendance Tracker</title>
+    <!-- Preload critical background and lever assets for instant, lag-free loading -->
+    <link rel="preload" as="image" href="jimmobilebg.jpg">
+    <link rel="preload" as="image" href="skaterbg1.jpg">
+    <link rel="preload" as="image" href="phbg.jpeg">
+    <link rel="preload" as="image" href="bg.jpg">
+    <link rel="preload" as="image" href="lever_base_rig.png">
+    <link rel="preload" as="image" href="lever_arm_rig.png">
+    <link rel="preload" as="image" href="upes.png">
     <!-- PWA & Mobile App Experience -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -69,13 +77,29 @@
             -moz-appearance: textfield;
         }
 
+        /* Prevent all unwanted mobile zooming gestures & overscroll */
+        html, body {
+            touch-action: manipulation;
+            -webkit-text-size-adjust: 100%;
+            overscroll-behavior: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        input, button, select, textarea {
+            touch-action: manipulation;
+            font-size: 16px !important; /* Prevents iOS auto-zoom on input focus */
+            -webkit-user-select: auto;
+            user-select: auto;
+        }
+
         #splash-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #000;
+            background-color: #0b0f19;
             z-index: 1000;
             display: flex;
             align-items: center;
@@ -83,6 +107,7 @@
             transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), visibility 1.2s, transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
             transform-origin: center center;
             overflow: hidden;
+            touch-action: none;
         }
 
         #splash-screen::before {
@@ -92,11 +117,12 @@
             left: 0;
             width: 100%;
             height: 100%;
+            background-color: #0b0f19;
             background-image: url('bg.jpg');
             background-size: cover;
             background-position: center;
             filter: contrast(1.1) brightness(0.9);
-            transition: filter 1.2s ease, transform 1.2s ease;
+            transition: filter 1.2s ease, transform 1.2s ease, opacity 0.4s ease;
         }
 
         body {
@@ -111,11 +137,13 @@
             left: 0;
             width: 100vw;
             height: 100vh;
+            background-color: #0b0f19;
             background-image: url('skaterbg1.jpg');
             background-size: cover;
             background-position: center;
             z-index: -1;
             pointer-events: none;
+            transition: opacity 0.5s ease;
         }
 
         /* Mobile specific background */
@@ -128,7 +156,7 @@
             }
             .splash-text {
                 position: absolute;
-                top: 38vh; /* Position exactly under the neck */
+                top: 36vh; /* Position under neck cleanly */
                 left: 50%;
                 transform: translateX(-50%);
                 width: 100%;
@@ -139,6 +167,34 @@
                 backdrop-filter: blur(6px) !important;
                 -webkit-backdrop-filter: blur(6px) !important;
                 border-color: rgba(255, 255, 255, 0.1) !important;
+            }
+        }
+
+        /* OG Glass Green Glowing Start Button */
+        .og-glass-green {
+            background: rgba(16, 185, 129, 0.12) !important;
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(52, 211, 153, 0.45) !important;
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+            animation: glass-green-pulse 2.2s infinite ease-in-out;
+        }
+
+        .og-glass-green:hover {
+            transform: scale(1.05) translateY(-2px);
+            background: rgba(16, 185, 129, 0.22) !important;
+            border-color: rgba(52, 211, 153, 0.8) !important;
+            box-shadow: 0 0 35px rgba(16, 185, 129, 0.6), 0 0 70px rgba(16, 185, 129, 0.25), inset 0 1px 3px rgba(255, 255, 255, 0.6);
+        }
+
+        @keyframes glass-green-pulse {
+            0%, 100% {
+                box-shadow: 0 0 18px rgba(16, 185, 129, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+                border-color: rgba(52, 211, 153, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 32px rgba(16, 185, 129, 0.55), 0 0 50px rgba(16, 185, 129, 0.25), inset 0 1px 3px rgba(255, 255, 255, 0.55);
+                border-color: rgba(52, 211, 153, 0.75);
             }
         }
 
@@ -327,30 +383,49 @@
             <div class="splash-text" id="drippyText">
                 <!-- Spans will be injected here by JS -->
             </div>
-            <!-- Desktop: Click anywhere -->
-            <div id="desktop-entry" class="mt-8 z-20 text-gray-300 text-sm tracking-widest uppercase font-mono bg-black/40 px-4 py-2 rounded-full border border-pink-500/30 animate-pulse backdrop-blur-sm pointer-events-none hidden md:block cursor-pointer">
-                Click anywhere to enter
+            <!-- Desktop: OG Glass Green Glowing Button (centered below pink text) -->
+            <div id="desktop-entry" onclick="triggerEnter()" class="mt-8 z-30 og-glass-green px-7 py-3 rounded-full cursor-pointer select-none transition-all duration-300 hidden md:flex items-center gap-3 group">
+                <span class="relative flex h-2.5 w-2.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 shadow-[0_0_8px_#34d399]"></span>
+                </span>
+                <span class="text-emerald-300 text-xs tracking-[0.25em] uppercase font-mono font-bold drop-shadow-[0_0_10px_rgba(52,211,153,0.7)] group-hover:text-white transition-colors">
+                    Click anywhere to start
+                </span>
+                <svg class="w-3.5 h-3.5 text-emerald-400 group-hover:translate-x-1 transition-transform drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                </svg>
             </div>
 
-            <!-- Mobile: Interactive Lever -->
-            <div id="mobile-lever-container" class="md:hidden absolute left-0 w-full flex flex-col items-center justify-end z-20 pointer-events-auto select-none" style="bottom: max(env(safe-area-inset-bottom, 40px), 40px);">
-                <div class="text-[#ff1493] drop-shadow-[0_0_8px_rgba(255,20,147,0.8)] text-sm tracking-widest font-mono mb-2 uppercase font-bold pointer-events-none">Pull to enter</div>
+            <!-- Mobile: Interactive Lever with Cartoon Guy Physically Pulling/Pushing -->
+            <div id="mobile-lever-container" class="md:hidden absolute left-0 w-full flex flex-col items-center justify-end z-20 pointer-events-auto select-none" style="bottom: max(env(safe-area-inset-bottom, 24px), 24px); touch-action: none;">
+                <div id="lever-hint-pill" class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/60 border border-white/20 backdrop-blur-md mb-2 transition-all duration-300 pointer-events-none">
+                    <span id="lever-hint-dot" class="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_#ef4444]"></span>
+                    <span id="lever-hint-text" class="text-white/90 text-xs tracking-widest font-mono uppercase font-bold">Drag finger to pull lever</span>
+                </div>
                 
-                <div id="custom-lever-track" class="relative flex items-center justify-start" style="width: 280px; height: 180px;">
-                    <!-- Lever Handle Wrapper -->
-                    <div id="lever-handle-wrapper" class="relative cursor-grab" style="touch-action: none; transform-origin: bottom center; will-change: transform;">
-                        <img id="lever-img" src="guy.png" style="width: 150px; height: auto; display: block; pointer-events: none;" />
+                <div id="custom-lever-track" class="relative flex items-center justify-center overflow-visible" style="width: 280px; height: 210px; touch-action: none;">
+                    <!-- Floor shadow -->
+                    <div class="absolute bottom-2 left-6 right-6 h-4 bg-black/50 rounded-full blur-md pointer-events-none"></div>
+
+                    <!-- Fixed Lever Base (anchored firmly to floor) -->
+                    <img id="lever-base-img" src="lever_base_rig.png" alt="Base" class="absolute pointer-events-none select-none" style="width: 240px; height: 240px; bottom: 0; right: 20px; object-fit: contain; z-index: 10;" />
+
+                    <!-- Cartoon Character + Lever Arm Rig (Pivots from the base center) -->
+                    <div id="lever-arm-wrapper" class="absolute cursor-grab select-none" style="width: 240px; height: 240px; bottom: 0; right: 20px; touch-action: none; transform-origin: 75.3% 82.4%; will-change: transform; z-index: 15;">
+                        <img id="lever-arm-img" src="lever_arm_rig.png" alt="Character Pulling Lever" class="w-full h-full object-contain pointer-events-none select-none" />
                         
-                        <!-- Glow overlay positioned over the sphere in the image -->
+                        <!-- Red/Green Power Sphere positioned over the red knob at 38% X, 7% Y -->
                         <div id="sphere-glow-overlay" class="absolute pointer-events-none rounded-full" style="
-                            width: 35px; 
-                            height: 35px; 
-                            top: 5%; 
-                            left: 50%; 
-                            transform: translateX(-50%);
-                            background: radial-gradient(circle, rgba(255,50,50,0.85) 20%, rgba(255,0,0,0) 70%);
-                            box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
-                            transition: background 0.1s, box-shadow 0.1s;
+                            width: 32px; 
+                            height: 32px; 
+                            top: 7%; 
+                            left: 38%; 
+                            transform: translate(-50%, -50%);
+                            background: radial-gradient(circle, rgba(239, 68, 68, 0.9) 20%, rgba(239, 68, 68, 0) 70%);
+                            box-shadow: 0 0 20px rgba(239, 68, 68, 0.7);
+                            transition: background 0.15s ease, box-shadow 0.15s ease;
+                            z-index: 20;
                         "></div>
                     </div>
                 </div>
@@ -395,39 +470,57 @@
     </div>
 
     <script>
-        // Shared template with fixed totals and zeroed attendance
+        // Shared template with updated totals matching latest academic calendar (ss_new.jpg)
         const defaultSubjects = [
-            { id: 1, name: 'Databases', totalSemester: 65, held: 0, attended: 0 },
-            { id: 2, name: 'Python Programming', totalSemester: 66, held: 0, attended: 0 },
-            { id: 3, name: 'Design & Analysis of Algorithms', totalSemester: 47, held: 0, attended: 0 },
-            { id: 4, name: 'Discrete Mathematics', totalSemester: 45, held: 0, attended: 0 },
-            { id: 5, name: 'Elements of AIML', totalSemester: 50, held: 0, attended: 0 },
-            { id: 6, name: 'Remote Sensing', totalSemester: 41, held: 0, attended: 0 },
-            { id: 7, name: 'Material Technology I', totalSemester: 36, held: 0, attended: 0 }
+            { id: 1, name: 'Databases', totalSemester: 61, held: 0, attended: 0 },
+            { id: 2, name: 'Python Programming', totalSemester: 60, held: 0, attended: 0 },
+            { id: 3, name: 'Design & Analysis of Algorithms', totalSemester: 44, held: 0, attended: 0 },
+            { id: 4, name: 'Discrete Mathematics', totalSemester: 43, held: 0, attended: 0 },
+            { id: 5, name: 'Elements of AIML', totalSemester: 47, held: 0, attended: 0 },
+            { id: 6, name: 'Remote Sensing', totalSemester: 38, held: 0, attended: 0 },
+            { id: 7, name: 'Material Technology I', totalSemester: 33, held: 0, attended: 0 }
         ];
 
-        // Fresh memory key so it loads new semester data
-        let subjects = JSON.parse(localStorage.getItem('attendanceData_v4'));
+        // Fresh memory key (v5) so PC and Mobile automatically get the new counts
+        const STORAGE_KEY = 'attendanceData_v5';
+        const TARGET_KEY = 'attendanceTarget_v5';
+
+        let subjects = JSON.parse(localStorage.getItem(STORAGE_KEY));
         if (!subjects || subjects.length === 0) {
-            subjects = defaultSubjects;
+            // Carry over user progress if they had previously tracked attended/held in v4
+            const prevData = JSON.parse(localStorage.getItem('attendanceData_v4')) || JSON.parse(localStorage.getItem('attendanceData'));
+            if (prevData && Array.isArray(prevData) && prevData.length > 0) {
+                subjects = defaultSubjects.map(def => {
+                    const match = prevData.find(p => p.id === def.id || (p.name && p.name.toLowerCase() === def.name.toLowerCase()));
+                    return {
+                        id: def.id,
+                        name: def.name,
+                        totalSemester: def.totalSemester,
+                        held: match ? match.held : 0,
+                        attended: match ? match.attended : 0
+                    };
+                });
+            } else {
+                subjects = JSON.parse(JSON.stringify(defaultSubjects));
+            }
             saveData();
         }
 
         const targetInput = document.getElementById('target');
         
-        const savedTarget = localStorage.getItem('attendanceTarget_v4');
+        const savedTarget = localStorage.getItem(TARGET_KEY) || localStorage.getItem('attendanceTarget_v4');
         if(savedTarget) targetInput.value = savedTarget;
 
         targetInput.addEventListener('input', () => {
             let val = parseInt(targetInput.value);
             if (val > 100) targetInput.value = 100;
             if (val < 1) targetInput.value = 1;
-            localStorage.setItem('attendanceTarget_v4', targetInput.value);
+            localStorage.setItem(TARGET_KEY, targetInput.value);
             renderCards();
         });
 
         function saveData() {
-            localStorage.setItem('attendanceData_v4', JSON.stringify(subjects));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(subjects));
         }
 
         function resetToDefaults() {
@@ -492,7 +585,15 @@
         function calculateStats(attended, held, totalSemester, target) {
             const currentPercent = held === 0 ? 0 : (attended / held) * 100;
             const remainingClasses = Math.max(0, totalSemester - held);
-            const totalRequiredToPass = Math.ceil((target / 100) * totalSemester);
+            
+            // Strict > target% rule as per university guidelines and ss_new.jpg
+            const exactRequired = (target / 100) * totalSemester;
+            let totalRequiredToPass;
+            if (Number.isInteger(exactRequired)) {
+                totalRequiredToPass = exactRequired + 1; // Strict > 75%
+            } else {
+                totalRequiredToPass = Math.ceil(exactRequired);
+            }
             
             let moreNeeded = totalRequiredToPass - attended;
             if (moreNeeded < 0) moreNeeded = 0;
@@ -631,92 +732,205 @@
             }
         });
 
-        // --- Lever Logic for Mobile ---
-        const leverImg = document.getElementById('lever-img');
-
-        const handleWrapper = document.getElementById('lever-handle-wrapper');
+        // --- Physical Lever Interaction for Mobile ---
+        const armWrapper = document.getElementById('lever-arm-wrapper');
         const sphereGlow = document.getElementById('sphere-glow-overlay');
-        let isDragging = false;
-        let startX = 0;
-        let currentX = 0;
-        
-        // Track width is 280, handle is 150. Max travel ~130.
-        const maxTravelX = 130; 
-        const activationThresholdX = maxTravelX * 0.85;
+        const leverHintText = document.getElementById('lever-hint-text');
+        const leverHintDot = document.getElementById('lever-hint-dot');
 
-        if (handleWrapper) {
-            handleWrapper.addEventListener('pointerdown', (e) => {
-                if (e.button !== 0) return;
-                
-                isDragging = true;
-                startX = e.clientX - currentX;
-                handleWrapper.style.transition = 'none';
-                handleWrapper.style.cursor = 'grabbing';
-                handleWrapper.setPointerCapture(e.pointerId);
-            });
+        let isDraggingLever = false;
+        let startTouchX = 0;
+        let leverEngaged = false;
+        const MAX_TRAVEL = 90; // Drag travel in pixels
 
-            handleWrapper.addEventListener('pointermove', (e) => {
-                if (!isDragging) return;
-                e.preventDefault();
+        // Synthesized mechanical gear latch sound via Web Audio API
+        function playLeverClack() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                if (ctx.state === 'suspended') ctx.resume();
+                const t = ctx.currentTime;
                 
-                let x = e.clientX - startX;
-                if (x < 0) x = 0;
-                if (x > maxTravelX) x = maxTravelX;
-                
-                currentX = x;
-                let progress = currentX / maxTravelX;
-                
-                // Character leans and pulls!
-                let skew = progress * 15; // Leaning right
-                let rotate = progress * 6; // Slight rotation
-                
-                handleWrapper.style.transform = `translateX(${currentX}px) skewX(${skew}deg) rotate(${rotate}deg)`;
-                
-                // Color glow transitions from Red (255,50,50) to Green (0,255,0)
-                let r = Math.round(255 * (1 - progress));
-                let g = Math.round(255 * progress);
-                
-                sphereGlow.style.background = `radial-gradient(circle, rgba(${r},${g},0,0.85) 20%, rgba(${r},${g},0,0) 70%)`;
-                sphereGlow.style.boxShadow = `0 0 ${20 + progress*20}px rgba(${r}, ${g}, 0, ${0.6 + progress*0.3})`;
-                
-                if (currentX >= activationThresholdX && !handleWrapper.dataset.snapped) {
-                    handleWrapper.dataset.snapped = 'true';
-                    if (navigator.vibrate) navigator.vibrate(50);
-                } else if (currentX < activationThresholdX) {
-                    handleWrapper.dataset.snapped = '';
-                }
-            });
+                const osc1 = ctx.createOscillator();
+                const osc2 = ctx.createOscillator();
+                const gain = ctx.createGain();
 
-            handleWrapper.addEventListener('pointerup', (e) => {
-                if (!isDragging) return;
-                isDragging = false;
-                handleWrapper.style.cursor = 'grab';
-                handleWrapper.releasePointerCapture(e.pointerId);
-                
-                if (currentX >= activationThresholdX) {
-                    // Fully pull to enter
-                    handleWrapper.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-                    handleWrapper.style.transform = `translateX(${maxTravelX}px) skewX(20deg) rotate(8deg)`;
-                    
-                    sphereGlow.style.background = `radial-gradient(circle, rgba(0,255,0,0.95) 20%, rgba(0,255,0,0) 70%)`;
-                    sphereGlow.style.boxShadow = `0 0 50px rgba(0, 255, 0, 1)`;
-                    
-                    if (navigator.vibrate) navigator.vibrate([30, 50, 40]);
-                    
-                    setTimeout(() => {
-                        triggerEnter();
-                    }, 400);
-                } else {
-                    // Snap back if released early
-                    handleWrapper.style.transition = 'transform 0.6s cubic-bezier(0.5, 1.5, 0.4, 1)';
-                    currentX = 0;
-                    handleWrapper.style.transform = `translateX(0px) skewX(0deg) rotate(0deg)`;
-                    
-                    sphereGlow.style.background = `radial-gradient(circle, rgba(255,50,50,0.85) 20%, rgba(255,0,0,0) 70%)`;
-                    sphereGlow.style.boxShadow = `0 0 20px rgba(255, 0, 0, 0.6)`;
-                }
-            });
+                osc1.type = 'triangle';
+                osc1.frequency.setValueAtTime(160, t);
+                osc1.frequency.exponentialRampToValueAtTime(30, t + 0.08);
+
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(320, t);
+                osc2.frequency.exponentialRampToValueAtTime(40, t + 0.06);
+
+                gain.gain.setValueAtTime(0.4, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+
+                osc1.connect(gain);
+                osc2.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc1.start(t);
+                osc2.start(t);
+                osc1.stop(t + 0.1);
+                osc2.stop(t + 0.1);
+            } catch(e) {}
         }
+
+        function handleDragStart(clientX) {
+            if (leverEngaged || window.innerWidth >= 768) return;
+            isDraggingLever = true;
+            startTouchX = clientX;
+            if (armWrapper) {
+                armWrapper.style.transition = 'none';
+                armWrapper.style.cursor = 'grabbing';
+            }
+        }
+
+        function handleDragMove(clientX) {
+            if (!isDraggingLever || leverEngaged || !armWrapper) return;
+            const deltaX = clientX - startTouchX;
+            let progress = Math.min(1, Math.abs(deltaX) / MAX_TRAVEL);
+            let angle, skew;
+            
+            if (deltaX >= 0) {
+                // Pushing lever forward (clockwise rotation + character leaning forward)
+                angle = progress * 32;
+                skew = -progress * 12;
+            } else {
+                // Pulling lever backward (counter-clockwise rotation + character pulling back)
+                angle = -progress * 26;
+                skew = progress * 14;
+            }
+            
+            armWrapper.style.transform = `rotate(${angle}deg) skewX(${skew}deg)`;
+            
+            // Shift glow color from crimson red to intense neon green
+            const r = Math.round(239 * (1 - progress) + 34 * progress);
+            const g = Math.round(68 * (1 - progress) + 197 * progress);
+            const b = Math.round(68 * (1 - progress) + 94 * progress);
+            
+            if (sphereGlow) {
+                sphereGlow.style.background = `radial-gradient(circle, rgba(${r},${g},${b},0.95) 20%, rgba(${r},${g},${b},0) 70%)`;
+                sphereGlow.style.boxShadow = `0 0 ${20 + progress * 30}px rgba(${r}, ${g}, ${b}, ${0.7 + progress * 0.3})`;
+            }
+            
+            if (progress >= 0.75) {
+                if (leverHintText) leverHintText.textContent = "RELEASE TO ENGAGE";
+                if (leverHintDot) leverHintDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-ping shadow-[0_0_8px_#34d399]";
+            } else {
+                if (leverHintText) leverHintText.textContent = deltaX >= 0 ? "Pushing Lever..." : "Pulling Lever...";
+                if (leverHintDot) leverHintDot.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_#f59e0b]";
+            }
+        }
+
+        function handleDragEnd(clientX) {
+            if (!isDraggingLever || leverEngaged || !armWrapper) return;
+            isDraggingLever = false;
+            armWrapper.style.cursor = 'grab';
+            
+            const deltaX = clientX - startTouchX;
+            const progress = Math.min(1, Math.abs(deltaX) / MAX_TRAVEL);
+            
+            if (progress >= 0.75) {
+                leverEngaged = true;
+                playLeverClack();
+                if (navigator.vibrate) navigator.vibrate([35, 50, 45]);
+                
+                // Snap to locked engaged posture
+                armWrapper.style.transition = 'transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                const finalAngle = deltaX >= 0 ? 36 : -30;
+                const finalSkew = deltaX >= 0 ? -14 : 16;
+                armWrapper.style.transform = `rotate(${finalAngle}deg) skewX(${finalSkew}deg)`;
+                
+                if (sphereGlow) {
+                    sphereGlow.style.background = `radial-gradient(circle, rgba(34,197,94,1) 25%, rgba(34,197,94,0) 70%)`;
+                    sphereGlow.style.boxShadow = `0 0 50px rgba(34, 197, 94, 1), 0 0 100px rgba(34, 197, 94, 0.6)`;
+                }
+                
+                if (leverHintText) leverHintText.textContent = "ENGAGED!";
+                if (leverHintDot) leverHintDot.className = "w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_12px_#34d399]";
+                
+                setTimeout(() => {
+                    triggerEnter();
+                }, 350);
+            } else {
+                // Snap back to resting state
+                armWrapper.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                armWrapper.style.transform = 'rotate(0deg) skewX(0deg)';
+                
+                if (sphereGlow) {
+                    sphereGlow.style.background = `radial-gradient(circle, rgba(239,68,68,0.9) 20%, rgba(239,68,68,0) 70%)`;
+                    sphereGlow.style.boxShadow = `0 0 20px rgba(239, 68, 68, 0.7)`;
+                }
+                
+                if (leverHintText) leverHintText.textContent = "Drag finger to pull lever";
+                if (leverHintDot) leverHintDot.className = "w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_#ef4444]";
+            }
+        }
+
+        // Enable touch dragging across the mobile splash screen or directly on lever
+        const splashScreenEl = document.getElementById('splash-screen');
+        if (splashScreenEl) {
+            splashScreenEl.addEventListener('touchstart', (e) => {
+                if (window.innerWidth < 768 && e.touches.length === 1) {
+                    handleDragStart(e.touches[0].clientX);
+                }
+            }, { passive: true });
+
+            splashScreenEl.addEventListener('touchmove', (e) => {
+                if (isDraggingLever && e.touches.length === 1) {
+                    handleDragMove(e.touches[0].clientX);
+                }
+            }, { passive: true });
+
+            splashScreenEl.addEventListener('touchend', (e) => {
+                if (isDraggingLever) {
+                    const clientX = e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : startTouchX;
+                    handleDragEnd(clientX);
+                }
+            }, { passive: true });
+
+            splashScreenEl.addEventListener('touchcancel', () => {
+                if (isDraggingLever) {
+                    handleDragEnd(startTouchX);
+                }
+            }, { passive: true });
+
+            // Pointer events for desktop testing or mouse drag
+            if (armWrapper) {
+                armWrapper.addEventListener('pointerdown', (e) => {
+                    if (e.button === 0) {
+                        handleDragStart(e.clientX);
+                        armWrapper.setPointerCapture(e.pointerId);
+                    }
+                });
+                armWrapper.addEventListener('pointermove', (e) => {
+                    if (isDraggingLever) handleDragMove(e.clientX);
+                });
+                armWrapper.addEventListener('pointerup', (e) => {
+                    if (isDraggingLever) {
+                        armWrapper.releasePointerCapture(e.pointerId);
+                        handleDragEnd(e.clientX);
+                    }
+                });
+            }
+        }
+
+        // Strict prevention of mobile zooming & accidental double taps
+        document.addEventListener('gesturestart', (e) => e.preventDefault(), { passive: false });
+        document.addEventListener('gesturechange', (e) => e.preventDefault(), { passive: false });
+        document.addEventListener('gestureend', (e) => e.preventDefault(), { passive: false });
+
+        let lastTouchEndGlobal = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEndGlobal <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEndGlobal = now;
+        }, { passive: false });
 
         let isPlaying = false;
         function toggleMusic() {
